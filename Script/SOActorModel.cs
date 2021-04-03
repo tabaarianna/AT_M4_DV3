@@ -12,5 +12,5 @@ public class SOActorModel : ScriptableObject
     public int hitPower;
     public GameObject actor;
     public GameObject actorsBullets;
-    public int score;
+	public int score;
 }

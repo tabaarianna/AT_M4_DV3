@@ -3,15 +3,15 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Monetization;
 
-public class PlayerShipBuild : MonoBehaviour
+public class PlayerShipBuild : MonoBehaviour 
 {
 	[SerializeField]
 	GameObject[] shopButtons;
 	GameObject target;
-	GameObject tmpSelection;
-	GameObject textBoxPanel;
+ 	GameObject tmpSelection;	
+	GameObject textBoxPanel;	
 	string placementId_rewardedvideo = "rewardedVideo";
-	string gameId = "4064922";
+  	string gameId = "1234567";
 	[SerializeField]
 	GameObject[] visualWeapons;
 	[SerializeField]
@@ -35,33 +35,33 @@ public class PlayerShipBuild : MonoBehaviour
 		PreparePlayerShipForUpgrade();
 		TurnOffSelectionHighlights();
 	}
-
+	
 	void CheckPlatform()
 	{
 		if (Application.platform == RuntimePlatform.IPhonePlayer)
 		{
-			gameId = "4064922";
+			gameId = "123456";  
 		}
 		else if (Application.platform == RuntimePlatform.Android)
 		{
-			gameId = "4064923";
+			gameId = "123456";  
 		}
-		Monetization.Initialize(gameId, false);
+		Monetization.Initialize(gameId,false);
 	}
 	void PreparePlayerShipForUpgrade()
 	{
-		playerShip = GameObject.Instantiate(Resources.Load("Prefab/Player/Player_Ship")) as GameObject;
-		playerShip.GetComponent<Player>().enabled = false;
-		playerShip.transform.position = new Vector3(0, 10000, 0);
-		playerShip.GetComponent<IActorTemplate>().ActorStats(defaultPlayerShip);
+	 	playerShip = GameObject.Instantiate(Resources.Load("Prefab/Player/Player_Ship")) as GameObject;
+	 	playerShip.GetComponent<Player>().enabled = false;
+	 	playerShip.transform.position = new Vector3(0,10000,0);
+	 	playerShip.GetComponent<IActorTemplate>().ActorStats(defaultPlayerShip);
 	}
 
-	GameObject ReturnClickedObject(out RaycastHit hit)
+	GameObject ReturnClickedObject (out RaycastHit hit)
 	{
 		GameObject target = null;
-		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-		if (Physics.Raycast(ray.origin, ray.direction * 100, out hit))
+		Ray ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+		
+		if (Physics.Raycast (ray.origin, ray.direction * 100, out hit)) 
 		{
 			target = hit.collider.gameObject;
 		}
@@ -79,7 +79,7 @@ public class PlayerShipBuild : MonoBehaviour
 	void UpdateDescriptionBox()
 	{
 		textBoxPanel.transform.Find("name").gameObject.GetComponent<TextMesh>().text = tmpSelection.GetComponentInParent<ShopPiece>().ShopSelection.iconName;
-		textBoxPanel.transform.Find("desc").gameObject.GetComponent<TextMesh>().text = tmpSelection.GetComponentInParent<ShopPiece>().ShopSelection.description;
+		textBoxPanel.transform.Find("desc").gameObject.GetComponent<TextMesh>().text = tmpSelection.GetComponentInParent<ShopPiece>().ShopSelection.description;	
 	}
 
 	void Select()
@@ -90,100 +90,100 @@ public class PlayerShipBuild : MonoBehaviour
 
 	public void AttemptSelection()
 	{
-		if (Input.GetMouseButtonDown(0))
+		if (Input.GetMouseButtonDown (0)) 
 		{
 			RaycastHit hitInfo;
-			target = ReturnClickedObject(out hitInfo);
+			target = ReturnClickedObject (out hitInfo);
 
 			if (target != null)
-
+		
 			{
-				if (target.transform.Find("itemText"))
-				{
-					TurnOffSelectionHighlights();
-					Select();
-					UpdateDescriptionBox();
+					if (target.transform.Find("itemText"))
+					{ 
+						TurnOffSelectionHighlights();
+						Select();
+						UpdateDescriptionBox();
+						
 
+						
+						if (target.transform.Find("itemText").GetComponent<TextMesh>().text != "SOLD")
+						{
+							
+							Affordable();
 
-					//NOT ALREADY SOLD
-					if (target.transform.Find("itemText").GetComponent<TextMesh>().text != "SOLD")
-					{
-						//can afford
-						Affordable();
-
-						//can not afford
-						LackOfCredits();
+							
+							LackOfCredits();
+						}
+						else if (target.transform.Find("itemText").GetComponent<TextMesh>().text == "SOLD")
+						{
+							SoldOut();
+						}
 					}
-					else if (target.transform.Find("itemText").GetComponent<TextMesh>().text == "SOLD")
+		   			else if(target.name == "BUY ?")
+        			{
+         		 		BuyItem();
+       		 		}
+     				else if (target.name == "WATCH AD")
 					{
-						SoldOut();
+						WatchAdvert();
 					}
-				}
-				else if (target.name == "BUY ?")
-				{
-					BuyItem();
-				}
-				else if (target.name == "WATCH AD")
-				{
-					WatchAdvert();
-				}
-				else if (target.name == "START")
-				{
-					StartGame();
-				}
+					    else if(target.name == "START")
+					{
+						StartGame();
+					}
+				 }
 			}
 		}
-	}
-
-	void WatchAdvert()
-	{
-		if (Application.internetReachability != NetworkReachability.NotReachable)
+		
+		void WatchAdvert()
+		 {
+			if (Application.internetReachability != NetworkReachability.NotReachable)
+			{
+			  ShowRewardedAds();
+			}   
+		 }
+        
+		IEnumerator WaitForAd () 
 		{
-			ShowRewardedAds();
-		}
-	}
+			string placementId = placementId_rewardedvideo;
+			while (!Monetization.IsReady (placementId)) 
+			{
+				yield return null;
+			}
 
-	IEnumerator WaitForAd()
-	{
-		string placementId = placementId_rewardedvideo;
-		while (!Monetization.IsReady(placementId))
+			ShowAdPlacementContent ad = null;
+			ad = Monetization.GetPlacementContent (placementId) as ShowAdPlacementContent;
+
+			if (ad != null) 
+			{
+				ad.Show (AdFinished);          
+			}
+		}
+		
+	    void AdFinished (ShowResult result)
 		{
-			yield return null;
+			if (result == ShowResult.Finished) 
+			{
+			  bank += 300;
+			  bankObj.GetComponentInChildren<TextMesh>().text = bank.ToString();
+			  TurnOffSelectionHighlights(); 
+			}
 		}
-
-		ShowAdPlacementContent ad = null;
-		ad = Monetization.GetPlacementContent(placementId) as ShowAdPlacementContent;
-
-		if (ad != null)
-		{
-			ad.Show(AdFinished);
-		}
-	}
-
-	void AdFinished(ShowResult result)
-	{
-		if (result == ShowResult.Finished)
-		{
-			bank += 300;
-			bankObj.GetComponentInChildren<TextMesh>().text = bank.ToString();
-			TurnOffSelectionHighlights();
-		}
-	}
-
-	void ShowRewardedAds()
-	{
-		StartCoroutine(WaitForAd());
-	}
-	void BuyItem()
-	{
+		
+	  void ShowRewardedAds()
+	  {
+		StartCoroutine (WaitForAd());
+	  }
+	  void BuyItem()
+	  {
 		Debug.Log("PURCHASED");
 		purchaseMade = true;
 		buyButton.SetActive(false);
 		tmpSelection.SetActive(false);
 		for (int i = 0; i < visualWeapons.Length; i++)
 		{
-			if (visualWeapons[i].name == tmpSelection.transform.parent.gameObject.
-											GetComponent<ShopPiece>().ShopSelection.iconName)
+		if (visualWeapons[i].name == tmpSelection.transform.parent.gameObject.
+										GetComponent<ShopPiece>().ShopSelection.iconName)
 			{
 				visualWeapons[i].SetActive(true);
 			}
@@ -191,16 +191,16 @@ public class PlayerShipBuild : MonoBehaviour
 		UpgradeToShip(tmpSelection.transform.parent.gameObject.GetComponent<ShopPiece>().ShopSelection.iconName);
 
 		bank = bank - System.Int32.Parse(tmpSelection.transform.parent.GetComponent<ShopPiece>().ShopSelection.cost);
-
+		
 		bankObj.transform.Find("bankText").GetComponent<TextMesh>().text = bank.ToString();
 		tmpSelection.transform.parent.transform.Find("itemText").GetComponent<TextMesh>().text = "SOLD";
-	}
+	  }
 
-	void UpgradeToShip(string upgrade)
+    void UpgradeToShip(string upgrade)
 	{
-		GameObject shipItem = GameObject.Instantiate(Resources.Load("Prefab/Player/" + upgrade)) as GameObject;
+		GameObject shipItem = GameObject.Instantiate(Resources.Load("Prefab/Player/"+upgrade)) as GameObject;
 		shipItem.transform.SetParent(playerShip.transform);
-		shipItem.transform.localPosition = Vector3.zero;
+		shipItem.transform.localPosition = Vector3.zero; 
 	}
 
 
@@ -213,12 +213,12 @@ public class PlayerShipBuild : MonoBehaviour
 	{
 		if (bank >= System.Int32.Parse(target.transform.GetComponent<ShopPiece>().ShopSelection.cost))
 		{
-			Debug.Log("CAN BUY");
-			buyButton.SetActive(true);
+		  Debug.Log("CAN BUY");
+		  buyButton.SetActive(true);
 		}
 	}
 
-	void LackOfCredits()
+    void LackOfCredits()
 	{
 		if (bank < System.Int32.Parse(target.transform.Find("itemText").GetComponent<TextMesh>().text))
 		{
@@ -226,7 +226,7 @@ public class PlayerShipBuild : MonoBehaviour
 		}
 	}
 
-	void SoldOut()
+  	void SoldOut()
 	{
 		Debug.Log("SOLD OUT");
 	}
@@ -235,24 +235,22 @@ public class PlayerShipBuild : MonoBehaviour
 	{
 		for (int i = 0; i < visualWeapons.Length; i++)
 		{
-			visualWeapons[i].gameObject.SetActive(false);
+		  visualWeapons[i].gameObject.SetActive(false);
 		}
 	}
-
+	
 	void StartGame()
-	{
+	{	 
 		if (purchaseMade)
-		{
-			playerShip.name = "UpgradedShip";
-
-			if (playerShip.transform.Find("energy +1(Clone)"))
-			{
-				playerShip.GetComponent<Player>().Health = 2;
-			}
-			DontDestroyOnLoad(playerShip);
-		}
-		UnityEngine.SceneManagement.SceneManager.LoadScene("testLevel");
-	}
+    {
+      playerShip.name = "UpgradedShip";
+      
+	  if (playerShip.transform.Find("energy +1(Clone)"))
+      {
+        playerShip.GetComponent<Player>().Health = 2;
+      } 
+      DontDestroyOnLoad(playerShip);
+    }
+  	GameManager.Instance.GetComponent<ScenesManager>().BeginGame(GameManager.gameLevelScene);
+  }
 }
-
-

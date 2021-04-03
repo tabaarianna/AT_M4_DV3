@@ -6,9 +6,9 @@ public class EnemyWave : MonoBehaviour, IActorTemplate
  int travelSpeed;
  int fireSpeed;
  int hitPower;
-	int score;
+ int score;
  
- //specfic for wave enemy
+ 
  [SerializeField]
  float verticalSpeed = 2;
  [SerializeField]
@@ -26,7 +26,7 @@ public class EnemyWave : MonoBehaviour, IActorTemplate
 	health = actorModel.health;
 	travelSpeed = actorModel.speed;
 	hitPower = actorModel.hitPower;
-		score = actorModel.score;
+	score = actorModel.score;
  }
  
  public void Die()
@@ -36,16 +36,16 @@ public class EnemyWave : MonoBehaviour, IActorTemplate
  
  void OnTriggerEnter(Collider other)
  {
-	// if the player or their bullet hits you....
+	
 	if (other.tag == "Player")
 	{
 		if (health >= 1)
 		{
 			health -= other.GetComponent<IActorTemplate>().SendDamage();
-				GameManager.Instance.GetComponent<ScoreManager>().SetScore(score);
 		}
 		if (health <= 0)
 		{
+			GameManager.Instance.GetComponent<ScoreManager>().SetScore(score);
 			Die();
 		}
 	}
